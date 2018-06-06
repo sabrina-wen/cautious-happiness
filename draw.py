@@ -3,6 +3,10 @@ from matrix import *
 from math import *
 from gmath import *
 
+def vertex_normal_vector(polygons, i, screen, zbuffer, color):
+    # determine adjacent faces
+    print "Polygon points " + polygons
+
 def scanline_convert(polygons, i, screen, zbuffer, color ):
     flip = False
     BOT = 0
@@ -68,6 +72,7 @@ def draw_polygons( matrix, screen, zbuffer, view, ambient, light, areflect, dref
         if dot_product(normal, view) > 0:
 
             color = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect )
+            # get polygon vertices
             scanline_convert(matrix, point, screen, zbuffer, color)
 
             # draw_line( int(matrix[point][0]),
