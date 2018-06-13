@@ -51,6 +51,77 @@ def scanline_convert(polygons, i, screen, zbuffer, color ):
             x1 = points[MID][0]
             z1 = points[MID][2]
 
+def interpolate(polygons, i, screen, zbuffer, intensities):
+    flip = False
+    BOT = 0
+    TOP = 2
+    MID = 1
+
+    points = [ (polygons[i][0], polygons[i][1], polygons[i][2]),
+               (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]),
+               (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2]) ]
+
+    # color = [0,0,0]
+    # color[RED] = (23*(i/3)) %256
+    # color[GREEN] = (109*(i/3)) %256
+    # color[BLUE] = (227*(i/3)) %256
+
+    points.sort(key = lambda x: x[1])
+    x0 = points[BOT][0]
+    z0 = points[BOT][2]
+    x1 = points[BOT][0]
+    z1 = points[BOT][2]
+    y = int(points[BOT][1])
+    y_bot = points[BOT][1]
+    y_mid = points[MID][1]
+    y_top = points[TOP][1]
+
+    distance0 = int(points[TOP][1]) - y * 1.0
+    distance1 = int(points[MID][1]) - y * 1.0
+    distance2 = int(points[TOP][1]) - int(points[MID][1]) * 1.0
+
+    dx0 = (points[TOP][0] - points[BOT][0]) / distance0 if distance0 != 0 else 0
+    dz0 = (points[TOP][2] - points[BOT][2]) / distance0 if distance0 != 0 else 0
+    dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
+    dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
+
+    #print ' '.join(points[BOT])
+    i_bot = intensities[(' '.join(str(i) for i in points[BOT]))]
+    i_mid = intensities[(' '.join(str(i) for i in points[MID]))]
+    i_top = intensities[(' '.join(str(i) for i in points[TOP]))]
+
+    while y <= int(points[TOP][1]):
+
+        i_one = [0, 0, 0]
+        i_two = [0, 0, 0]
+
+        i_one[RED] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[RED] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[RED]
+        i_one[BLUE] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[BLUE] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[BLUE]
+        i_one[GREEN] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[GREEN] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[GREEN]
+
+        i_two[RED] = ((y - y_bot) / (y_top - y_bot)) * i_top[RED] +((y_top - y) / (y_top - y_bot)) * i_bot[RED]
+        i_two[BLUE] = ((y - y_bot) / (y_top - y_bot)) * i_top[BLUE] +((y_top - y) / (y_top - y_bot)) * i_bot[BLUE]
+        i_two[GREEN] = ((y - y_bot) / (y_top - y_bot)) * i_top[GREEN] +((y_top - y) / (y_top - y_bot)) * i_bot[GREEN]
+
+        draw_gouraud_line(i_two, int(x0), y, z0, i_one, int(x1), y, z1, screen, zbuffer,)
+        x0+= dx0
+        z0+= dz0
+        x1+= dx1
+        z1+= dz1
+        y+= 1
+
+
+        if ( not flip and y >= int(points[MID][1])):
+            flip = True
+
+            dx1 = (points[TOP][0] - points[MID][0]) / distance2 if distance2 != 0 else 0
+            dz1 = (points[TOP][2] - points[MID][2]) / distance2 if distance2 != 0 else 0
+            x1 = points[MID][0]
+            z1 = points[MID][2]
+
+
+
+
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0);
     add_point(polygons, x1, y1, z1);
@@ -61,19 +132,25 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
         print 'Need at least 3 points to draw'
         return
 
-    point = 0
-    while point < len(matrix) - 2:
+    if (shade_type == 'gouraud'):
+        intensities = gouraud_shading(matrix, view, ambient, light, areflect, dreflect, sreflect)
+        point = 0
+        while point < len(matrix) - 2:
+            interpolate(matrix, point, screen, zbuffer, intensities)
+            point+= 3
 
-        normal = calculate_normal(matrix, point)[:]
-        if dot_product(normal, view) > 0:
-            # choose shading option here?
-            if (shade_type == 'flat'):
+    if (shade_type == 'flat'):
+        point = 0
+        while point < len(matrix) - 2:
+            normal = calculate_normal(matrix, point)[:]
+            if dot_product(normal, view) > 0:
+                # choose shading option here?
                 color = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect )
-            if (shade_type == 'gouraud'):
-                color = gouraud_shading(matrix)
-            if (shade_type == 'phong'):
-                color = phong_shading()
-            scanline_convert(matrix, point, screen, zbuffer, color)
+                scanline_convert(matrix, point, screen, zbuffer, color)
+            point+= 3
+
+    if (shade_type == 'phong'):
+        color = phong_shading()
 
             # draw_line( int(matrix[point][0]),
             #            int(matrix[point][1]),
@@ -96,7 +173,7 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
             #            int(matrix[point+2][1]),
             #            matrix[point+2][2],
             #            screen, zbuffer, color)
-        point+= 3
+
 
 
 def add_box( polygons, x, y, z, width, height, depth ):
@@ -296,8 +373,7 @@ def add_edge( matrix, x0, y0, z0, x1, y1, z1 ):
 def add_point( matrix, x, y, z=0 ):
     matrix.append( [x, y, z, 1] )
 
-
-def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
+def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
 
     #swap points if going right -> left
     if x0 > x1:
@@ -360,6 +436,89 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color ):
 
     while ( loop_start < loop_end ):
         plot( screen, zbuffer, color, x, y, z )
+        if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
+             (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
+
+            x+= dx_northeast
+            y+= dy_northeast
+            d+= d_northeast
+        else:
+            x+= dx_east
+            y+= dy_east
+            d+= d_east
+        z+= dz
+        loop_start+= 1
+    plot( screen, zbuffer, color, x, y, z )
+
+def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
+
+    #swap points if going right -> left
+    if x0 > x1:
+        xt = x0
+        yt = y0
+        zt = z0
+        x0 = x1
+        y0 = y1
+        z0 = z1
+        x1 = xt
+        y1 = yt
+        z1 = zt
+
+    x = x0
+    y = y0
+    z = z0
+    A = 2 * (y1 - y0)
+    B = -2 * (x1 - x0)
+    wide = False
+    tall = False
+
+    if ( abs(x1-x0) >= abs(y1 - y0) ): #octants 1/8
+        wide = True
+        loop_start = x
+        loop_end = x1
+        dx_east = dx_northeast = 1
+        dy_east = 0
+        d_east = A
+        distance = x1 - x
+        if ( A > 0 ): #octant 1
+            d = A + B/2
+            dy_northeast = 1
+            d_northeast = A + B
+        else: #octant 8
+            d = A - B/2
+            dy_northeast = -1
+            d_northeast = A - B
+
+    else: #octants 2/7
+        tall = True
+        dx_east = 0
+        dx_northeast = 1
+        distance = abs(y1 - y)
+        if ( A > 0 ): #octant 2
+            d = A/2 + B
+            dy_east = dy_northeast = 1
+            d_northeast = A + B
+            d_east = B
+            loop_start = y
+            loop_end = y1
+        else: #octant 7
+            d = A/2 - B
+            dy_east = dy_northeast = -1
+            d_northeast = A - B
+            d_east = -1 * B
+            loop_start = y1
+            loop_end = y
+
+    dz = (z1 - z0) / distance if distance != 0 else 0
+
+    while ( loop_start < loop_end ):
+        i_final = [0, 0, 0]
+        i_final[RED] = ((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED]
+        i_final[BLUE] = ((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE]
+        i_final[GREEN] = ((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN]
+        limit_color(i_final)
+
+        plot( screen, zbuffer, i_final, x, y, z )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
              (tall and ((A > 0 and d < 0) or (A < 0 and d > 0 )))):
 

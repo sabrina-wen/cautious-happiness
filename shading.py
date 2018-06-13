@@ -1,19 +1,37 @@
-from gmath import calculate_normal
+def calculate_normal(polygons, i):
+
+    A = [0, 0, 0]
+    B = [0, 0, 0]
+    N = [0, 0, 0]
+
+    A[0] = polygons[i+1][0] - polygons[i][0]
+    A[1] = polygons[i+1][1] - polygons[i][1]
+    A[2] = polygons[i+1][2] - polygons[i][2]
+
+    B[0] = polygons[i+2][0] - polygons[i][0]
+    B[1] = polygons[i+2][1] - polygons[i][1]
+    B[2] = polygons[i+2][2] - polygons[i][2]
+
+    N[0] = A[1] * B[2] - A[2] * B[1]
+    N[1] = A[2] * B[0] - A[0] * B[2]
+    N[2] = A[0] * B[1] - A[1] * B[0]
+
+    return N
 
 def avgVertexNormals(polygons) :
     #dict with polygon index, list of three vertices
     polygon_v = polygon_vertices(polygons)
-    print polygon_v
+    #print polygon_v
     #dict with vertex as key, list of polygon indices
     v_polygon = vertices_polygons(polygons, polygon_v)
-    print v_polygon
+    #print v_polygon
     #calc normals for each polygon
     all_normals = all_poly_normals(polygons);
-    print all_normals
+    #print all_normals
     #calc avg normals
     avg_normals = calc_avg_normals(polygons, v_polygon, all_normals)
-    print avg_normals
-    
+    return avg_normals
+
 def polygon_vertices(polygons) :
     polygon_v = dict();
     #dict with polygon index, list of three vertices
@@ -29,7 +47,7 @@ def all_poly_normals(polygons) :
     for i in range(0, len(polygons), 3):
         polygon_n[i] = calculate_normal(polygons, i)
     return polygon_n
-        
+
 def vertices_polygons(polygons, polygon_v) :
     #dict with vertices as keys, list of polygon indices as value
     #go through polygons
@@ -50,7 +68,7 @@ def vertices_polygons(polygons, polygon_v) :
             #add the vertex and its list of polygon indices to the vertices dict
             vertices[vertex] = p_with_v
     return vertices
-    
+
 
 
 def calc_avg_normals(polygons, v_polygon, all_normals):
@@ -77,7 +95,7 @@ def calc_avg_normals(polygons, v_polygon, all_normals):
         #add to list of vertex with avged normals
         poly_normals[vertex] = normal_avg
     return poly_normals
-            
+
 
 '''
 p = [[0, 5, 0], [0, 0, 0], [0, 0, 5],
@@ -92,8 +110,8 @@ p = [[0, 5, 0], [0, 0, 0], [0, 0, 5],
      [5, 0, 5], [5, 0, 0], [5, 5, 0],
      [0, 0, 0], [5, 0, 0], [5, 0, 5],
      [5, 0, 5], [0, 0, 5], [0, 0, 0]]
-     
-     
+
+
 
 avgVertexNormals(p)
 '''

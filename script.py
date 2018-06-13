@@ -94,7 +94,6 @@ def run(filename):
         args = command['args']
         if c == 'shading':
             shade_type = command['shade_type']
-            get_color(shade_type)
             if shade_type == 'flat':
                 print "Flat shading implemented"
             elif shade_type == 'gouraud':
