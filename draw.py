@@ -57,9 +57,9 @@ def interpolate(polygons, i, screen, zbuffer, intensities):
     TOP = 2
     MID = 1
 
-    points = [ (polygons[i][0], polygons[i][1], polygons[i][2]),
-               (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]),
-               (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2]) ]
+    points = [ [polygons[i][0], polygons[i][1], polygons[i][2]],
+               [polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]],
+               [polygons[i+2][0], polygons[i+2][1], polygons[i+2][2]] ]
 
     # color = [0,0,0]
     # color[RED] = (23*(i/3)) %256
@@ -85,10 +85,11 @@ def interpolate(polygons, i, screen, zbuffer, intensities):
     dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
     dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
 
+#    print polygons
     #print ' '.join(points[BOT])
-    i_bot = intensities[(' '.join(str(i) for i in points[BOT]))]
-    i_mid = intensities[(' '.join(str(i) for i in points[MID]))]
-    i_top = intensities[(' '.join(str(i) for i in points[TOP]))]
+    i_bot = intensities[(' '.join(str(i) for i in points[BOT])) + " 1.0"]
+    i_mid = intensities[(' '.join(str(i) for i in points[MID])) + " 1.0"]
+    i_top = intensities[(' '.join(str(i) for i in points[TOP])) + " 1.0"]
 
     while y <= int(points[TOP][1]):
 
@@ -510,9 +511,8 @@ def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
             loop_end = y
 
     dz = (z1 - z0) / distance if distance != 0 else 0
-
+    i_final = [0, 0, 0]
     while ( loop_start < loop_end ):
-        i_final = [0, 0, 0]
         i_final[RED] = ((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED]
         i_final[BLUE] = ((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE]
         i_final[GREEN] = ((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN]
@@ -531,4 +531,4 @@ def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
             d+= d_east
         z+= dz
         loop_start+= 1
-    plot( screen, zbuffer, color, x, y, z )
+    plot( screen, zbuffer, i_final, x, y, z )
