@@ -56,9 +56,6 @@ def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x1, y1, z1);
     add_point(polygons, x2, y2, z2);
 
-def get_color(shade_type):
-    return shade_type
-
 def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect):
     if len(matrix) < 2:
         print 'Need at least 3 points to draw'
@@ -70,11 +67,11 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
         normal = calculate_normal(matrix, point)[:]
         if dot_product(normal, view) > 0:
             # choose shading option here?
-            if (get_color(shade_type) == 'flat'):
+            if (shade_type == 'flat'):
                 color = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect )
-            if (get_color(shade_type) == 'gouraud'):
+            if (shade_type == 'gouraud'):
                 color = gouraud_shading(matrix)
-            if (get_color(shade_type) == 'phong'):
+            if (shade_type == 'phong'):
                 color = phong_shading()
             scanline_convert(matrix, point, screen, zbuffer, color)
 
