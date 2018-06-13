@@ -41,7 +41,6 @@ def first_pass( commands ):
 def second_pass( commands, num_frames ):
     pass
 
-
 def run(filename):
     """
     This function runs an mdl script
@@ -93,8 +92,16 @@ def run(filename):
         #print command
         c = command['op']
         args = command['args']
-
-        if c == 'box':
+        if c == 'shading':
+            shade_type = command['shade_type']
+            get_color(shade_type)
+            if shade_type == 'flat':
+                print "Flat shading implemented"
+            elif shade_type == 'gouraud':
+                print "Gouraud shading implemented"
+            elif shade_type == 'phong':
+                print "Phong shading implemented"
+        elif c == 'box':
             if isinstance(args[0], str):
                 consts = args[0]
                 args = args[1:]
@@ -104,19 +111,19 @@ def run(filename):
                     args[0], args[1], args[2],
                     args[3], args[4], args[5])
             matrix_mult( stack[-1], tmp )
-            draw_polygons(tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
+            draw_polygons(shade_type, tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
             tmp = []
         elif c == 'sphere':
             add_sphere(tmp,
                        args[0], args[1], args[2], args[3], step_3d)
             matrix_mult( stack[-1], tmp )
-            draw_polygons(tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
+            draw_polygons(shade_type, tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
             tmp = []
         elif c == 'torus':
             add_torus(tmp,
                       args[0], args[1], args[2], args[3], args[4], step_3d)
             matrix_mult( stack[-1], tmp )
-            draw_polygons(tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
+            draw_polygons(shade_type, tmp, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect)
             tmp = []
         elif c == 'line':
             if isinstance(args[0], str):
@@ -154,15 +161,6 @@ def run(filename):
             matrix_mult( stack[-1], tmp )
             stack[-1] = [ x[:] for x in tmp]
             tmp = []
-        elif c == 'shading':
-            shade_type = command['shade_type']
-            get_color(shade_type)
-            if shade_type == 'flat':
-                print "Flat shading implemented"
-            elif shade_type == 'gouraud':
-                print "Gouraud shading implemented"
-            elif shade_type == 'phong':
-                print "Phong shading implemented"
         elif c == 'push':
             stack.append([x[:] for x in stack[-1]] )
         elif c == 'pop':

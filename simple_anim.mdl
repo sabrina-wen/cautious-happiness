@@ -1,9 +1,9 @@
 frames 100
 basename simple
 push
+shading phong
 move 250 250 0
 rotate x 60
 torus 0 0 0 30 55
-shading gouraud
 save pic.png
 display

@@ -8,29 +8,18 @@ LOCATION = 0
 COLOR = 1
 SPECULAR_EXP = 4
 
-def get_color(shade_type, matrix, normal, view, ambient, light, areflect, dreflect, sreflect):
-    if shade_type == flat:
-        get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect)
-    elif shade_type == gouraud:
-        gouraud_shading(matrix)
-    elif shade_type == phong:
-        phong_shading()
-
 #gouraud shading functions
-def gouraud_shading(): # not sure what other parameters are needed??
+def gouraud_shading(matrix): # not sure what other parameters are needed??
     # calculate normal n for each vertex of the polygon where n = avg of normals of the polygons which include the vertex_normal
-    vertex_normal(polygons, i, screen, zbuffer, color)
+    print "running gouraud now"
     vertex_normals = []
-    print polygons
-
-def vertex_normal(polygons, i, screen, zbuffer, color):
-    # determine adjacent faces
-    print "Polygon points"
-    print polygons
+    #print polygons
+    return [0,0,0]
 
 # phong shading functions
 def phong_shading():
-    print "this is phong"
+    print "running phong now"
+    return [255,0,0]
 
 #lighting functions
 def get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect ):
