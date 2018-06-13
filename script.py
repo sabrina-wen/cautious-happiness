@@ -90,7 +90,7 @@ def run(filename):
         return
 
     for command in commands:
-        print command
+        #print command
         c = command['op']
         args = command['args']
 
@@ -143,6 +143,7 @@ def run(filename):
             stack[-1] = [x[:] for x in tmp]
             tmp = []
         elif c == 'rotate':
+            #print args
             theta = args[1] * (math.pi/180)
             if args[0] == 'x':
                 tmp = make_rotX(theta)
@@ -153,6 +154,15 @@ def run(filename):
             matrix_mult( stack[-1], tmp )
             stack[-1] = [ x[:] for x in tmp]
             tmp = []
+        elif c == 'shading':
+            shade_type = command['shade_type']
+            get_color(shade_type)
+            if shade_type == 'flat':
+                print "Flat shading implemented"
+            elif shade_type == 'gouraud':
+                print "Gouraud shading implemented"
+            elif shade_type == 'phong':
+                print "Phong shading implemented"
         elif c == 'push':
             stack.append([x[:] for x in stack[-1]] )
         elif c == 'pop':

@@ -3,10 +3,6 @@ from matrix import *
 from math import *
 from gmath import *
 
-def vertex_normal_vector(polygons, i, screen, zbuffer, color):
-    # determine adjacent faces
-    print "Polygon points " + polygons
-
 def scanline_convert(polygons, i, screen, zbuffer, color ):
     flip = False
     BOT = 0
@@ -60,7 +56,7 @@ def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x1, y1, z1);
     add_point(polygons, x2, y2, z2);
 
-def draw_polygons( matrix, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect):
+def draw_polygons( shade_type, matrix, screen, zbuffer, view, ambient, light, areflect, dreflect, sreflect):
     if len(matrix) < 2:
         print 'Need at least 3 points to draw'
         return
@@ -70,9 +66,9 @@ def draw_polygons( matrix, screen, zbuffer, view, ambient, light, areflect, dref
 
         normal = calculate_normal(matrix, point)[:]
         if dot_product(normal, view) > 0:
-
-            color = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect )
-            # get polygon vertices
+            # choose shading option here?
+            color = get_color(shade_type, matrix, normal, view, ambient, light, areflect, dreflect, sreflect)
+            #color = get_lighting(normal, view, ambient, light, areflect, dreflect, sreflect )
             scanline_convert(matrix, point, screen, zbuffer, color)
 
             # draw_line( int(matrix[point][0]),
