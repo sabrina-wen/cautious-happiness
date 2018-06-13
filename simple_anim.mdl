@@ -4,6 +4,6 @@ push
 shading gouraud
 move 250 250 0
 rotate x 60
-torus 0 0 0 30 55
+torus 0 0 0 70 100
 save pic.png
 display

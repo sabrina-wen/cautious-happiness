@@ -52,6 +52,8 @@ def scanline_convert(polygons, i, screen, zbuffer, color ):
             z1 = points[MID][2]
 
 def interpolate(polygons, i, screen, zbuffer, intensities):
+    print intensities
+    print "hey"
     flip = False
     BOT = 0
     TOP = 2
@@ -133,6 +135,7 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
         print 'Need at least 3 points to draw'
         return
 
+    print matrix
     if (shade_type == 'gouraud'):
         intensities = gouraud_shading(matrix, view, ambient, light, areflect, dreflect, sreflect)
         point = 0
@@ -453,6 +456,8 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
 
 def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
 
+    print str(x0) + " This is the starting x value"
+
     #swap points if going right -> left
     if x0 > x1:
         xt = x0
@@ -511,12 +516,18 @@ def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
             loop_end = y
 
     dz = (z1 - z0) / distance if distance != 0 else 0
-    i_final = [0, 0, 0]
+
+    i_final = [255, 0, 0]
+
     while ( loop_start < loop_end ):
-        i_final[RED] = ((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED]
-        i_final[BLUE] = ((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE]
-        i_final[GREEN] = ((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN]
+        print x0
+        print x
+        i_final[RED] = int(((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED])
+        i_final[BLUE] = int(((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE])
+        i_final[GREEN] = int(((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN])
         limit_color(i_final)
+#        print i_one
+#        print i_two
 
         plot( screen, zbuffer, i_final, x, y, z )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or

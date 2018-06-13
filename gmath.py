@@ -16,10 +16,8 @@ def gouraud_shading(polygons, view, ambient, light, areflect, dreflect, sreflect
     vertex_intensity = {}
     # calculate vertex intensity
     for vertex in vertex_normals:
-        v = [float(x) for x in vertex.split(' ')]
-        i = get_lighting(v, view, ambient, light, areflect, dreflect, sreflect)
+        i = get_lighting(vertex_normals[vertex], view, ambient, light, areflect, dreflect, sreflect)
         vertex_intensity[vertex] = i
-    print vertex_intensity
     return vertex_intensity
 
 # phong shading functions
