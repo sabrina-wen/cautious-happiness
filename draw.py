@@ -52,8 +52,6 @@ def scanline_convert(polygons, i, screen, zbuffer, color ):
             z1 = points[MID][2]
 
 def interpolate(polygons, i, screen, zbuffer, intensities):
-    print intensities
-    print "hey"
     flip = False
     BOT = 0
     TOP = 2
@@ -93,20 +91,36 @@ def interpolate(polygons, i, screen, zbuffer, intensities):
     i_mid = intensities[(' '.join(str(i) for i in points[MID])) + " 1.0"]
     i_top = intensities[(' '.join(str(i) for i in points[TOP])) + " 1.0"]
 
+    print i_bot
+    print i_mid
+    print i_top
+    
     while y <= int(points[TOP][1]):
 
+#        print str(y) + ", " + str(y_bot) + ", " + str(y_mid) + ", " + str(y_top)
+        
         i_one = [0, 0, 0]
         i_two = [0, 0, 0]
 
-        i_one[RED] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[RED] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[RED]
-        i_one[BLUE] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[BLUE] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[BLUE]
-        i_one[GREEN] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[GREEN] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[GREEN]
+        if not flip: 
+            i_one[RED] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[RED] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[RED]
+            i_one[BLUE] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[BLUE] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[BLUE]
+            i_one[GREEN] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[GREEN] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[GREEN]
+        else:
+            i_one[RED] = ((y_top - y) / (y_top - y_mid)) * i_top[RED] + ((y_top - y) / (y_top - y_mid)) * i_mid[RED]
+            i_one[BLUE] = ((y_top - y) / (y_top - y_mid)) * i_top[BLUE] + ((y_top - y) / (y_top - y_mid)) * i_mid[BLUE]
+            i_one[GREEN] = ((y_top - y) / (y_top - y_mid)) * i_top[GREEN] + ((y_top - y) / (y_top - y_mid)) * i_mid[GREEN]
+            
 
         i_two[RED] = ((y - y_bot) / (y_top - y_bot)) * i_top[RED] +((y_top - y) / (y_top - y_bot)) * i_bot[RED]
         i_two[BLUE] = ((y - y_bot) / (y_top - y_bot)) * i_top[BLUE] +((y_top - y) / (y_top - y_bot)) * i_bot[BLUE]
         i_two[GREEN] = ((y - y_bot) / (y_top - y_bot)) * i_top[GREEN] +((y_top - y) / (y_top - y_bot)) * i_bot[GREEN]
 
-        draw_gouraud_line(i_two, int(x0), y, z0, i_one, int(x1), y, z1, screen, zbuffer,)
+        
+        print i_two
+        print i_one
+        draw_gouraud_line(i_two, int(x0), y, z0, i_one, int(x1), y, z1, screen, zbuffer)
+
         x0+= dx0
         z0+= dz0
         x1+= dx1
@@ -135,7 +149,7 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
         print 'Need at least 3 points to draw'
         return
 
-    print matrix
+#    print matrix
     if (shade_type == 'gouraud'):
         intensities = gouraud_shading(matrix, view, ambient, light, areflect, dreflect, sreflect)
         point = 0
@@ -456,8 +470,6 @@ def draw_line( x0, y0, z0, x1, y1, z1, screen, zbuffer, color):
 
 def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
 
-    print str(x0) + " This is the starting x value"
-
     #swap points if going right -> left
     if x0 > x1:
         xt = x0
@@ -520,8 +532,6 @@ def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
     i_final = [255, 0, 0]
 
     while ( loop_start < loop_end ):
-        print x0
-        print x
         i_final[RED] = int(((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED])
         i_final[BLUE] = int(((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE])
         i_final[GREEN] = int(((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN])
