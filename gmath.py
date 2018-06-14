@@ -4,10 +4,10 @@ from shading import *
 
 AMBIENT = 0
 DIFFUSE = 1
-SPECULAR = 2
+SPECULAR = 12
 LOCATION = 0
 COLOR = 1
-SPECULAR_EXP = 4
+SPECULAR_EXP = 24
 
 #gouraud shading functions
 def gouraud_shading(polygons, view, ambient, light, areflect, dreflect, sreflect): # not sure what other parameters are needed??

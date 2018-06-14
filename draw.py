@@ -85,40 +85,32 @@ def interpolate(polygons, i, screen, zbuffer, intensities):
     dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
     dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
 
-#    print polygons
-    #print ' '.join(points[BOT])
     i_bot = intensities[(' '.join(str(i) for i in points[BOT])) + " 1.0"]
     i_mid = intensities[(' '.join(str(i) for i in points[MID])) + " 1.0"]
     i_top = intensities[(' '.join(str(i) for i in points[TOP])) + " 1.0"]
 
-    print i_bot
-    print i_mid
-    print i_top
-    
     while y <= int(points[TOP][1]):
 
-#        print str(y) + ", " + str(y_bot) + ", " + str(y_mid) + ", " + str(y_top)
-        
         i_one = [0, 0, 0]
         i_two = [0, 0, 0]
 
-        if not flip: 
-            i_one[RED] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[RED] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[RED]
-            i_one[BLUE] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[BLUE] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[BLUE]
-            i_one[GREEN] = ((y - y_bot) / (y_mid - y_bot)) * i_mid[GREEN] + ((y_mid - y) / (y_mid - y_bot)) * i_bot[GREEN]
+        if not flip:
+            fraction = (y-y_bot)/(y_mid-y_bot) if (y_mid-y_bot) != 0 else 0
+            i_one[RED] = fraction*i_mid[RED] + (1-fraction)*i_bot[RED]
+            i_one[BLUE] = fraction*i_mid[BLUE] + (1-fraction)*i_bot[BLUE]
+            i_one[GREEN] = fraction*i_mid[GREEN] + (1-fraction)*i_bot[GREEN]
         else:
-            i_one[RED] = ((y_top - y) / (y_top - y_mid)) * i_top[RED] + ((y_top - y) / (y_top - y_mid)) * i_mid[RED]
-            i_one[BLUE] = ((y_top - y) / (y_top - y_mid)) * i_top[BLUE] + ((y_top - y) / (y_top - y_mid)) * i_mid[BLUE]
-            i_one[GREEN] = ((y_top - y) / (y_top - y_mid)) * i_top[GREEN] + ((y_top - y) / (y_top - y_mid)) * i_mid[GREEN]
+            fraction = (y_top-y)/(y_top-y_mid) if (y_top-y_mid) != 0 else 0
+            i_one[RED] = fraction*i_top[RED] + (1-fraction)*i_mid[RED]
+            i_one[BLUE] = fraction*i_top[BLUE] + (1-fraction)*i_mid[BLUE]
+            i_one[GREEN] = fraction*i_top[GREEN] + (1-fraction)*i_mid[GREEN]
             
-
-        i_two[RED] = ((y - y_bot) / (y_top - y_bot)) * i_top[RED] +((y_top - y) / (y_top - y_bot)) * i_bot[RED]
-        i_two[BLUE] = ((y - y_bot) / (y_top - y_bot)) * i_top[BLUE] +((y_top - y) / (y_top - y_bot)) * i_bot[BLUE]
-        i_two[GREEN] = ((y - y_bot) / (y_top - y_bot)) * i_top[GREEN] +((y_top - y) / (y_top - y_bot)) * i_bot[GREEN]
+        fraction2 = (y-y_bot)/(y_top-y_bot) if (y_top-y_bot) != 0 else 0
+        i_two[RED] = fraction2*i_top[RED] + (1-fraction2)*i_bot[RED]
+        i_two[BLUE] = fraction2*i_top[BLUE] + (1-fraction2) * i_bot[BLUE]
+        i_two[GREEN] = fraction2*i_top[GREEN] +(1-fraction2) * i_bot[GREEN]
 
         
-        print i_two
-        print i_one
         draw_gouraud_line(i_two, int(x0), y, z0, i_one, int(x1), y, z1, screen, zbuffer)
 
         x0+= dx0
@@ -149,7 +141,6 @@ def draw_polygons(shade_type, matrix, screen, zbuffer, view, ambient, light, are
         print 'Need at least 3 points to draw'
         return
 
-#    print matrix
     if (shade_type == 'gouraud'):
         intensities = gouraud_shading(matrix, view, ambient, light, areflect, dreflect, sreflect)
         point = 0
@@ -276,7 +267,6 @@ def generate_sphere( cx, cy, cz, r, step ):
             z = r * math.sin(math.pi * circ) * math.sin(2*math.pi * rot) + cz
 
             points.append([x, y, z])
-            #print 'rotation: %d\tcircle%d'%(rotation, circle)
     return points
 
 def add_torus( edges, cx, cy, cz, r0, r1, step ):
@@ -529,15 +519,15 @@ def draw_gouraud_line( i_two, x0, y0, z0, i_one, x1, y1, z1, screen, zbuffer):
 
     dz = (z1 - z0) / distance if distance != 0 else 0
 
-    i_final = [255, 0, 0]
+    i_final = [int(i_one[RED]), int(i_one[GREEN]), int(i_one[BLUE])]
+    limit_color(i_final)
 
     while ( loop_start < loop_end ):
-        i_final[RED] = int(((x0 - x) / (x0 - x1)) * i_one[RED] + ((x - x1) / (x0 - x1)) * i_two[RED])
-        i_final[BLUE] = int(((x0 - x) / (x0 - x1)) * i_one[BLUE] + ((x - x1) / (x0 - x1)) * i_two[BLUE])
-        i_final[GREEN] = int(((x0 - x) / (x0 - x1)) * i_one[GREEN] + ((x - x1) / (x0 - x1)) * i_two[GREEN])
+        fraction = (x0 - x) / (x0 - x1) if (x0 - x1) != 0 else 0
+        i_final[RED] = int(fraction*i_one[RED] + (1-fraction)*i_two[RED])
+        i_final[BLUE] = int(fraction*i_one[BLUE] + (1-fraction)*i_two[BLUE])
+        i_final[GREEN] = int(fraction*i_one[GREEN] + (1-fraction)*i_two[GREEN])
         limit_color(i_final)
-#        print i_one
-#        print i_two
 
         plot( screen, zbuffer, i_final, x, y, z )
         if ( (wide and ((A > 0 and d > 0) or (A < 0 and d < 0))) or
